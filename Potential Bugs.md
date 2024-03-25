@@ -32,4 +32,4 @@
 
 • **Which Factors?**
 
--   data.qbs \<- data.qbs['1967-01/2016-12'] is bugged as data.qbs is an empty data structure by this point. It is caused by data.qbs \<- data.qbs[complete.cases(data.qbs), unique(c(q5.vars, bs6.vars))] as data.qbs contained missing or NA values that would make the result an empty structure.
+-   data.qbs \<- data.qbs['1967-01/2016-12'] is bugged as data.qbs is an empty data structure by this point. It is caused by data.qbs \<- data.qbs[complete.cases(data.qbs), unique(c(q5.vars, bs6.vars))] as the function makes the result an empty structure.
