@@ -54,7 +54,7 @@
 
 **Summary**
 
-In our econometric analysis of portfolio returns within the commodities market, we discovered that macroeconomic indicators like U.S. recession periods (**`USREC`**) and inflation states (**`INFL.STATE`**) significantly influence short-term equal-weighted portfolio returns. Specifically, recession periods negatively impact returns, while inflationary periods tend to boost them. However, this significance diminishes over longer horizons, suggesting that immediate economic conditions play a more critical role in affecting returns than longer-term economic trends. Additionally, the momentum investment style (**`MoM.EW`**) demonstrates a positive association with short-term returns, indicating its potential utility in short-term investment strategies. Besides, the carry investment style (**`PFC.AGG`**) demonstrates a negative association with long-term returns, indicating its potential lost in long-term investment strategies. In general, the impact of economic indicators and investment styles becomes less predictive over extended periods, highlighting the complexities of forecasting long-term commodity portfolio returns based on current economic conditions and investment styles.
+In the econometric analysis of portfolio returns within the commodities market, we discovered that macroeconomic indicators like U.S. recession periods (**`USREC`**) and inflation states (**`INFL.STATE`**) significantly influence short-term equal-weighted portfolio returns. Specifically, recession periods negatively impact returns, while inflationary periods tend to boost them. However, this significance diminishes over longer horizons, suggesting that immediate economic conditions play a more critical role in affecting returns than longer-term economic trends. Additionally, the momentum investment style (**`MoM.EW`**) demonstrates a positive association with short-term returns, indicating its potential utility in short-term investment strategies. Besides, the carry investment style (**`PFC.AGG`**) demonstrates a negative association with long-term returns, indicating its potential lost in long-term investment strategies. In general, the impact of economic indicators and investment styles becomes less predictive over extended periods, highlighting the complexities of forecasting long-term commodity portfolio returns based on current economic conditions and investment styles.
 
 **Repetitive code** — Which-factors.Rmd
 
@@ -66,4 +66,4 @@ data.qbs \<- merge(BS6.monthly, Q5.monthly)
 
 data.qbs \<- data.qbs[complete.cases(data.qbs), unique(c(q5.vars, bs6.vars))]
 
-Lines of codes are repeated. Can shortened into function that filter both complete cases and merge data set.
+Lines of codes are repeated. Can shortened into function that both filter complete cases and merge data set.
