@@ -67,3 +67,5 @@ data.qbs \<- merge(BS6.monthly, Q5.monthly)
 data.qbs \<- data.qbs[complete.cases(data.qbs), unique(c(q5.vars, bs6.vars))]
 
 Lines of codes are repeated. Can shortened into function that both filter complete cases and merge data set.
+
+For example, a function like data.all \<- mergecomplete(vars, ....(more columns if user wants), data = (FF6.monthly, Q5.monthly, SY4.monthly, DHS3.monthly, BS6.monthly)) can do the work
