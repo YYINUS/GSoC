@@ -12,7 +12,7 @@
 
 3.  Intermediate :
 
-    See Private Message
+    See Private Message via Linkedln
 
 4.  Hard — Commodities-long-run.Rmd
 
