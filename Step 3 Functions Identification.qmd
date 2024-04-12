@@ -1,0 +1,36 @@
+---
+title: "Step 3 Function Identification"
+format: html
+editor: visual
+---
+
+Commodities-long-run has already contained many useful functions that can be used to replicate the paper or offer insights into portofolios that contain commodities
+
+There are the list of functions that worth to be created and documented 
+- CalcReturnMeasures 
+- LmHorizon
+
+- CommPortifolio --- a function that can be used to create Table 4 of the paper --- what will happen to Portofolio's mean, violatility, Sharpe Ratio of different period if a certain percentage(10%) of commodities is added
+
+- CommDrawdown --- a function that can be used to create Table 5 of the paper --- what will happen to Portofolio if 10 worst drawdown happened if a certain percentage(10%) of commodities is added
+
+There is an example of how I want the function to work 
+
+A generic CommPortifolio --- assume the investor invests across commodities(Commodities Index) 
+```{r}
+CommPortifolio <- function(R, periods, percentage, const=100) {}
+  # @param R An `xts` object with portfolios returns series
+  # @param periods A character vector specifying subperiod(s) to subset `R`
+  # @param percentage A numberic number that reconstructs the portofolio with X percentage of commodities 
+  # @param const A numeric, multiplication constant. Default to 100 used to express percent values
+```
+
+A more specific CommPortifolio --- investor invests certain commodities 
+```{r}
+CommPortifolio <- function(R, periods, R1, percentage, const=100) {}
+  # @param R An `xts` object with portfolios returns series
+  # @param periods A character vector specifying subperiod(s) to subset `R`
+  # @param R1 An `xts` object with one or more commodities returns series
+  # @param percentage A numberic number that reconstructs the portofolio with X percentage of commodities 
+  # @param const A numeric, multiplication constant. Default to 100 used to express percent values
+```
