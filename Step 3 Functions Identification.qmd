@@ -6,17 +6,20 @@ editor: visual
 
 Commodities-long-run has already contained many useful functions that can be used to replicate the paper or offer insights into portofolios that contain commodities
 
-There are the list of functions that worth to be created and documented 
-- CalcReturnMeasures 
-- LmHorizon
+There are the list of functions that worth to be created and documented
 
-- CommPortifolio --- a function that can be used to create Table 4 of the paper --- what will happen to Portofolio's mean, violatility, Sharpe Ratio of different period if a certain percentage(10%) of commodities is added
+-   CalcReturnMeasures --- function that takes three arguments and returns Arithmetic average return, Geometric average return, Volatility and Skewness of portofolios (already in document)
 
-- CommDrawdown --- a function that can be used to create Table 5 of the paper --- what will happen to Portofolio if 10 worst drawdown happened if a certain percentage(10%) of commodities is added
+-   LmHorizon --- function that performs linear regressions with a shifting horizon(already in document)
 
-There is an example of how I want the function to work 
+-   CommPortifolio --- a function that can be used to create Table 4 of the paper --- what will happen to Portofolio's mean, violatility, Sharpe Ratio of different period if a certain percentage(10%) of commodities is added
 
-A generic CommPortifolio --- assume the investor invests across commodities(Commodities Index) 
+-   CommDrawdown --- a function that can be used to create Table 5 of the paper --- what will happen to Portofolio if 10 worst drawdown happened if a certain percentage(10%) of commodities is added
+
+There is an example of how I want the function to work
+
+A generic CommPortifolio --- assume the investor invests across commodities(Commodities Index)
+
 ```{r}
 CommPortifolio <- function(R, periods, percentage, const=100) {}
   # @param R An `xts` object with portfolios returns series
@@ -25,7 +28,8 @@ CommPortifolio <- function(R, periods, percentage, const=100) {}
   # @param const A numeric, multiplication constant. Default to 100 used to express percent values
 ```
 
-A more specific CommPortifolio --- investor invests certain commodities 
+A more specific CommPortifolio --- investor invests certain commodities
+
 ```{r}
 CommPortifolio <- function(R, periods, R1, percentage, const=100) {}
   # @param R An `xts` object with portfolios returns series
