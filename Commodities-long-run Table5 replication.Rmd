@@ -1,0 +1,255 @@
+---
+title: "Replication Trial"
+output: html_document
+date: "2024-04-20"
+---
+
+-   Set up for running
+
+```{r, include=FALSE}
+rm(list = ls())
+
+options(tinytex.verbose = TRUE)
+```
+
+```{r setup, include = FALSE}
+knitr::opts_knit$set(
+  root.dir = normalizePath('..')
+)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  warning = FALSE,
+  error = FALSE
+)
+```
+
+
+```{r Data sourcing, cache=TRUE}
+# Data and framework set up
+library(quantmod)
+library(xts)
+library(PerformanceAnalytics)
+library(readxl)
+
+parser.path <- file.path('inst', 'parsers', 'COMLR.R')
+source(parser.path)
+
+parser.path2 <- file.path('inst', 'parsers', 'Shiller_CAPE_Update.R')
+source(parser.path2)
+
+USREC <- getSymbols.FRED('USREC', auto.assign=FALSE)
+index(USREC) <- as.yearmon(index(USREC))
+```
+
+```{r}
+# Calculate inflation and inflation states from Shiller's data
+# High Inflation --- inflation rate higher than average 1
+# Low Inflation --- inflation rate lower than average -1
+Shiller_CAPE$INF <- (stats::lag(Shiller_CAPE$CPI, k = 1) - Shiller_CAPE$CPI) / Shiller_CAPE$CPI
+Shiller_CAPE$INF.STATE2 <- ifelse(Shiller_CAPE$INF > mean(Shiller_CAPE$INF, na.rm = TRUE), 1, -1)
+```
+
+Create and merge data necessary to replicate Table 5
+```{r}
+data <- merge(
+                     COMLR['1877/2015', c('XRET.EW','SXRET.EW', 'CARRY.ADJ.EW', 'XRET.LS', 'SXRET.LS', 'CARRY.ADJ.LS', 'PFC.STATE', 'INFL.STATE')],
+                     USREC['1877/2015'],
+                     Shiller_CAPE$INF.STATE2['1877/2015']
+)
+
+```
+
+
+Table 5 Page 35 Commodity Index Returns and Aggregate States 
+https://www.nber.org/system/files/working_papers/w22793/w22793.pdf
+```{r}
+# Define the function Table5.EW with an optional parameter const which defaults to 100
+# Replicate Table 5 for equal weighted portfolio
+Table5.EW <- function(const=100) {
+  # Initialize a 5x7 matrix filled with NA values. The matrix has specified row and column names,
+  # corresponding to different statistical measures and market conditions, respectively.
+  res <- matrix(NA, 5, 7, 
+    dimnames = list(
+      c(
+        'N of Months',                      # Number of months considered in each state
+        'Return Mean',                      # Mean of returns
+        'Excess Spot Return Mean',          # Mean of excess spot returns
+        'Interest Rate Adjusted Carry Mean',# Mean of interest rate adjusted carry
+        'Return Volatility'                 # Standard deviation of returns, annualized
+      ),
+      c(
+        'Full Sample',      # All data without any state filtering
+        'Backwardation',    # Market condition where the future price is lower than the spot price
+        'Contango',         # Market condition where the future price is higher than the spot price
+        'High Inflation',   # Periods of high inflation
+        'Low Inflation',    # Periods of low inflation
+        'Expansion',        # Economic expansion periods
+        'Recession'         # Economic recession periods
+      )
+    )
+  )
+  
+  # Loop over each column (market condition) to calculate statistics
+  for (i in 1:7) {
+    # Select different subsets of the data based on market conditions using the column index
+    if (i == 2) {
+      temp = data[data$PFC.STATE == 1, ]
+    } else if (i == 3) {
+      temp = data[data$PFC.STATE == -1, ]
+    } else if (i == 6) {
+      temp = data[data$USREC == 0, ]
+    } else if (i == 7) {
+      temp = data[data$USREC == 1, ]
+    } else if (i == 4) {
+      temp = data[data$INF.STATE2 == 1, ]
+    } else if (i == 5) {
+      temp = data[data$INF.STATE2 == -1, ]
+    } else {
+      temp = data  # Default to using all data if no specific state is applicable
+    } 
+    
+    # Fill the matrix with calculated values:
+    res[1, i] <- nrow(temp)  # Number of months
+    # Calculate and annualize returns based on different measures provided in temp
+    res[2, i] <- PerformanceAnalytics::Return.annualized(temp$XRET.EW, scale = 12, geometric = FALSE) * const
+    res[3, i] <- PerformanceAnalytics::Return.annualized(temp$SXRET.EW, scale = 12, geometric = FALSE) * const
+    res[4, i] <- PerformanceAnalytics::Return.annualized(temp$CARRY.ADJ.EW, scale = 12, geometric = FALSE) * const
+    res[5, i] <- sd(temp$XRET.EW, na.rm = TRUE) * sqrt(12) * const  # Calculate volatility and annualize it
+  }
+  
+  # Return the fully populated matrix with all calculated statistics for each market condition
+  return(res)
+}
+
+# Call the function Table5.EW to execute and view results
+Table5.EW()
+```
+
+```{r}
+# Same function but
+# Replicate Table 5 for Long/short portfolio
+Table5.LS <- function(const=100) {
+  res <- matrix(NA, 5, 7, 
+    dimnames = list(
+      c(
+        'N of Months',                      
+        'Return Mean',                      
+        'Excess Spot Return Mean',          
+        'Interest Rate Adjusted Carry Mean',
+        'Return Volatility'                 
+      ),
+      c(
+        'Full Sample',      
+        'Backwardation',    
+        'Contango',         
+        'High Inflation',   
+        'Low Inflation',    
+        'Expansion',        
+        'Recession'         
+      )
+    )
+  )
+  for (i in 1:7) {
+    if (i == 2) {
+      temp = data[data$PFC.STATE == 1, ]
+    } else if (i == 3) {
+      temp = data[data$PFC.STATE == -1, ]
+    } else if (i == 6) {
+      temp = data[data$USREC == 0, ]
+    } else if (i == 7) {
+      temp = data[data$USREC == 1, ]
+    } else if (i == 4) {
+      temp = data[data$INF.STATE2 == 1, ]
+    } else if (i == 5) {
+      temp = data[data$INF.STATE2 == -1, ]
+    } else {
+      temp = data
+    } 
+    
+    res[1, i] <- nrow(temp)
+    res[2, i] <- PerformanceAnalytics::Return.annualized(temp$XRET.LS, scale = 12, geometric = FALSE)*const
+    res[3, i] <- PerformanceAnalytics::Return.annualized(temp$SXRET.LS, scale = 12, geometric = FALSE)*const
+    res[4, i] <- PerformanceAnalytics::Return.annualized(temp$CARRY.ADJ.LS, scale = 12, geometric = FALSE)*const
+    res[5, i] <- sd(temp$XRET.EW, na.rm=TRUE) * sqrt(12) * const
+  }
+  
+  return(res)
+}
+
+Table5.LS()
+```
+```{r}
+# Create a xts object that contains categories for different economic states
+# Time started at 1877 because 1877 is the earliest time when all data are available
+macro_states <- merge(
+  Shiller_CAPE$INF.STATE2['1877/'], 
+  USREC['1877/'], 
+  COMLR['1877/', c('PFC.STATE', 'INFL.STATE')], 
+  all = TRUE
+)
+```
+
+```{r}
+# set up test data for the below function that captures the essence of Table 5
+COMLR.Test <- COMLR[,-(9:ncol(COMLR))]
+```
+
+
+A function that people can call to analyze their portfolio returns under different economic situations --- monthly series only so far
+```{r}
+Portfolio_States <- function(R, Period, const = 100) {
+  # @param R An `xts` object with portfolios returns series
+  # @param Period A string that defines the time period for analysis (e.g., '1877/2015' means from 1877 to 2015).
+  # @param const A numeric, multiplication constant. Default to 100 used to express percent values
+  
+  # Calculate the number of rows needed in the result matrix, based on the number of columns in R plus one for 'N of Months'.
+  n_rows <- 1 + ncol(R)
+  
+  # Define the column names representing different market states for analysis.
+  col_names <- c('Full sample', 'Backwardation', 'Contango', 'High Inflation', 
+                 'Low Inflation', 'Expansion', 'Recession')
+  
+  # Define the row names for the result matrix, starting with 'N of Months' followed by the names of columns in R.
+  row_names <- c('N of Months', colnames(R))
+  
+  # Initialize a result matrix filled with NA values. It has dimensions and names specified by n_rows and col_names.
+  res <- matrix(NA, 
+                nrow = n_rows, 
+                ncol = length(col_names),
+                dimnames = list(row_names, col_names))
+  
+  # Merge data from R and macro_states for the specified Period, handling all dates (even if only present in one dataset).
+  data1 <- merge(R[Period], macro_states[Period], all = TRUE)
+  
+  # Loop over each market state to perform analysis.
+  for (i in 1:7) {
+    # Select a subset of data1 based on the market state, determined by column i.
+    switch(i,
+      { temp <- data1 },
+      { temp <- data1[data1$PFC.STATE == 1, ] },
+      { temp <- data1[data1$PFC.STATE == -1, ] },
+      { temp <- data1[data1$INF.STATE2 == 1, ] },
+      { temp <- data1[data1$INF.STATE2 == -1, ] },
+      { temp <- data1[data1$USREC == 0, ] },
+      { temp <- data1[data1$USREC == 1, ] }
+    )
+    
+    # Calculate the number of months (rows) for each market state and store it in the first row of the corresponding column.
+    res[1, i] <- nrow(temp)
+    # Calculate annualized returns for each column of R and store them in subsequent rows.
+    for (j in 1:ncol(R)) {
+        res[j+1, i] <- PerformanceAnalytics::Return.annualized(
+          temp[, j], scale = 12, geometric = FALSE) * const
+    }
+  }
+  
+  # Return the populated result matrix.
+  return(res)
+}
+
+# Call the function with a test dataset 'COMLR.Test' and a specific period '1877/2015'.
+Portfolio_States(COMLR.Test, '1877/2015')
+```
+`
